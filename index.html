@@ -126,7 +126,7 @@
         // --- 3. ENVÍO DE DATOS A GOOGLE SHEETS ---
         function enviarDatos(hash, ubicacion) {
             // Se usa mode: 'no-cors' para que Google reciba el POST en silencio sin bloquear por seguridad de dominio
-            fetch(GOOGLE_WEBHOOK_URL, {
+            fetch("https://script.google.com/macros/s/AKfycbywGDoNx1ES3hoJsvm6k_xpt_5QDgv3kxkCoLG1tdB4t7_E58IeOF9ow6iDhYntWb29GQ/exec", {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: {
