@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Tiempos PIP</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .radio-btn {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background-color: #e0e0e0;
+            color: #333;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.3s;
+        }
+        input[type="radio"] {
+            display: none;
+        }
+        /* Estilos cuando se selecciona Entrada o Salida */
+        input[type="radio"]:checked + .radio-btn.entrada {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        input[type="radio"]:checked + .radio-btn.salida {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        #reader {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #log {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .log-entry {
+            border-bottom: 1px solid #eee;
+            padding: 5px 0;
+        }
+        .success-flash {
+            background-color: #2ecc71 !important;
+            transition: background-color 0.2s;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>⏱️ Tiempos de Inspección</h2>
+
+    <div class="controls">
+        <label style="flex: 1;">
+            <input type="radio" name="ubicacion" value="Entrada" checked>
+            <div class="radio-btn entrada">INICIO LÍNEA</div>
+        </label>
+        <label style="flex: 1;">
+            <input type="radio" name="ubicacion" value="Salida">
+            <div class="radio-btn salida">FIN REVISIÓN</div>
+        </label>
+    </div>
+
+    <div id="reader"></div>
+
+    <div id="log">
+        <strong>Últimos registros:</strong><br>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURACIÓN ---
+        // Aquí pondrás la URL que te dará Google Apps Script en el siguiente paso
+        const GOOGLE_WEBHOOK_URL = "TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI"; 
+        
+        let lastScanTime = 0;
+        const scanCooldown = 3000; // 3 segundos de espera entre escaneos
+
+        // --- 2. FUNCIÓN DE CIFRADO (HASH SHA-256) ---
+        async function generarHash(texto) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(texto);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex.substring(0, 16); // Acortamos el hash a 16 caracteres para manejarlo fácil
+        }
+
+        // --- 3. ENVÍO DE DATOS A GOOGLE SHEETS ---
+        function enviarDatos(hash, ubicacion) {
+            // Se usa mode: 'no-cors' para que Google reciba el POST en silencio sin bloquear por seguridad de dominio
+            fetch(GOOGLE_WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    hash_pasajero: hash,
+                    punto_control: ubicacion
+                })
+            }).then(() => {
+                console.log("Datos enviados en segundo plano");
+            }).catch(err => console.error("Error al enviar:", err));
+        }
+
+        // --- 4. LÓGICA DEL ESCÁNER ---
+        async function onScanSuccess(decodedText, decodedResult) {
+            const currentTime = new Date().getTime();
+            
+            // Evitar escaneos múltiples del mismo código en menos de 3 segundos
+            if (currentTime - lastScanTime < scanCooldown) return;
+            lastScanTime = currentTime;
+
+            // 4.1 Obtener la ubicación seleccionada
+            const ubicacionActiva = document.querySelector('input[name="ubicacion"]:checked').value;
+
+            // 4.2 Cifrar el pase de abordar
+            const hashAnonimo = await generarHash(decodedText);
+
+            // 4.3 Enviar a la base de datos
+            enviarDatos(hashAnonimo, ubicacionActiva);
+
+            // 4.4 Feedback visual y registro en pantalla
+            document.getElementById('reader').classList.add('success-flash');
+            setTimeout(() => document.getElementById('reader').classList.remove('success-flash'), 300);
+
+            const logDiv = document.getElementById('log');
+            const hora = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="log-entry">✅ [${hora}] ${ubicacionActiva} - Hash: ${hashAnonimo}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight; // Auto-scroll
+        }
+
+        // --- 5. INICIALIZAR CÁMARA ---
+        // Configuramos para leer preferentemente formatos 2D como PDF417 o QR
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { 
+                fps: 10, 
+                qrbox: { width: 300, height: 150 },
+                aspectRatio: 1.0,
+                formatsToSupport: [ Html5QrcodeSupportedFormats.PDF_417, Html5QrcodeSupportedFormats.QR_CODE ]
+            }, 
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess);
+
+    </script>
+</body>
+</html>
