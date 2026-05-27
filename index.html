@@ -3,185 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Tiempos PIP</title>
+    <title>Control PIP Inteligente</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 400px;
-        }
-        .radio-btn {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            background-color: #e0e0e0;
-            color: #333;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.1em;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.3s;
-        }
-        input[type="radio"] {
-            display: none;
-        }
-        /* Estilos cuando se selecciona Entrada o Salida */
-        input[type="radio"]:checked + .radio-btn.entrada {
-            background-color: #3498db;
-            color: white;
-            border-color: #2980b9;
-        }
-        input[type="radio"]:checked + .radio-btn.salida {
-            background-color: #e74c3c;
-            color: white;
-            border-color: #c0392b;
-        }
-        #reader {
-            width: 100%;
-            max-width: 400px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        #log {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 400px;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            max-height: 150px;
-            overflow-y: auto;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .log-entry {
-            border-bottom: 1px solid #eee;
-            padding: 5px 0;
-        }
-        .success-flash {
-            background-color: #2ecc71 !important;
-            transition: background-color 0.2s;
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #eef2f3; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        h2 { color: #2c3e50; margin: 0 0 10px 0; font-size: 1.5em; text-align: center; }
+        .panel { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); width: 100%; max-width: 400px; margin-bottom: 10px; box-sizing: border-box;}
+        .row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .col { flex: 1; display: flex; flex-direction: column; }
+        label { font-size: 0.8em; color: #7f8c8d; margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
+        select { padding: 10px; border-radius: 6px; border: 1px solid #bdc3c7; font-size: 1em; background-color: #f8f9fa;}
+        
+        /* Botones Entrada/Salida */
+        .controls { display: flex; gap: 10px; width: 100%; }
+        .radio-btn { flex: 1; padding: 12px; text-align: center; background-color: #e0e0e0; color: #555; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + .radio-btn.entrada { background-color: #2980b9; color: white; }
+        input[type="radio"]:checked + .radio-btn.salida { background-color: #c0392b; color: white; }
+        
+        /* Contenedor dinámico de Motivos */
+        #contenedor-motivo { display: none; margin-top: 10px; animation: fadeIn 0.3s; }
+        #contenedor-motivo.visible { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        #motivo { border: 2px solid #e74c3c; color: #c0392b; font-weight: bold; }
+
+        #reader { width: 100%; max-width: 400px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #000; }
+        .status-bar { margin-top: 10px; width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-weight: bold; }
+        .btn-enviar { background-color: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase;}
+        
+        #log { margin-top: 10px; width: 100%; max-width: 400px; background: #fff; padding: 10px 15px; border-radius: 8px; max-height: 100px; overflow-y: auto; font-size: 0.85em; box-sizing: border-box; }
+        .log-entry { border-bottom: 1px solid #f1f1f1; padding: 4px 0; }
+        .success-flash { background-color: #2ecc71 !important; }
     </style>
 </head>
 <body>
 
-    <h2>⏱️ Tiempos de Inspección</h2>
+    <h2>⏱️ Análisis PIP</h2>
 
-    <div class="controls">
-        <label style="flex: 1;">
-            <input type="radio" name="ubicacion" value="Entrada" checked>
-            <div class="radio-btn entrada">INICIO LÍNEA</div>
-        </label>
-        <label style="flex: 1;">
-            <input type="radio" name="ubicacion" value="Salida">
-            <div class="radio-btn salida">FIN REVISIÓN</div>
-        </label>
+    <div class="panel">
+        <div class="row">
+            <div class="col">
+                <label>Filtro</label>
+                <select id="filtro"><option value="Alfa 1">Alfa 1</option><option value="Alfa 2">Alfa 2</option></select>
+            </div>
+            <div class="col">
+                <label>Línea</label>
+                <select id="linea"><script>for(let i=1; i<=13; i++) document.write(`<option value="Línea ${i}">Línea ${i}</option>`);</script></select>
+            </div>
+        </div>
+
+        <div class="controls">
+            <label style="flex: 1;"><input type="radio" name="ubicacion" value="Entrada" checked><div class="radio-btn entrada">ENTRADA</div></label>
+            <label style="flex: 1;"><input type="radio" name="ubicacion" value="Salida"><div class="radio-btn salida">SALIDA</div></label>
+        </div>
+
+        <div id="contenedor-motivo">
+            <label>🚨 Motivo de la demora (Solo Salida)</label>
+            <select id="motivo">
+                <option value="Sin Novedad">✅ Sin novedad (Flujo rápido)</option>
+                <option value="Revisión Física">✋ Revisión física de equipaje</option>
+                <option value="Electrónicos">💻 Electrónicos olvidados / Laptops</option>
+                <option value="Punzocortantes">🔪 Punzocortantes detectados</option>
+                <option value="Líquidos">💧 Líquidos / Aerosoles excedidos</option>
+                <option value="Revisión Corporal">🧍 Revisión corporal (Arco pitó)</option>
+            </select>
+        </div>
     </div>
 
     <div id="reader"></div>
 
-    <div id="log">
-        <strong>Últimos registros:</strong><br>
+    <div class="status-bar">
+        <span id="contador" style="color: #2980b9;">Registros: 0</span>
+        <button class="btn-enviar" onclick="enviarLote()">📤 Cierre</button>
     </div>
 
-    <script>
-        // --- 1. CONFIGURACIÓN ---
-        // Aquí pondrás la URL que te dará Google Apps Script en el siguiente paso
-        const GOOGLE_WEBHOOK_URL = "TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI"; 
-        
-        let lastScanTime = 0;
-        const scanCooldown = 3000; // 3 segundos de espera entre escaneos
+    <div id="log"><strong>Historial local:</strong><br></div>
 
-        // --- 2. FUNCIÓN DE CIFRADO (HASH SHA-256) ---
-        async function generarHash(texto) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(texto);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            return hashHex.substring(0, 16); // Acortamos el hash a 16 caracteres para manejarlo fácil
+    <script>
+        const GOOGLE_WEBHOOK_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
+        
+        let registrosOffline = JSON.parse(localStorage.getItem('pip_lote_datos')) || [];
+        let bloqueosTemporales = {}; // Se borran si se cierra la pestaña
+        
+        // --- LÓGICA DE INTERFAZ (MOSTRAR MOTIVOS) ---
+        const radios = document.querySelectorAll('input[name="ubicacion"]');
+        const contMotivo = document.getElementById('contenedor-motivo');
+        
+        radios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if(e.target.value === 'Salida') {
+                    contMotivo.classList.add('visible');
+                } else {
+                    contMotivo.classList.remove('visible');
+                }
+            });
+        });
+
+        // --- SEGURO ANTI-OLVIDOS (15 Minutos) ---
+        let tiempoUltimaValidacion = Date.now();
+        const LIMITE_ALERTA = 15 * 60 * 1000; // 15 minutos en milisegundos
+
+        function auditarUbicacion() {
+            if (Date.now() - tiempoUltimaValidacion > LIMITE_ALERTA) {
+                const lineaSeleccionada = document.getElementById('linea').value;
+                // Esto detiene temporalmente la ejecución y lanza una alerta nativa gigante
+                const confirmacion = confirm(`⚠️ CONTROL DE CALIDAD AVSEC ⚠️\n\nHan pasado 15 minutos.\n¿Confirmas que sigues escaneando en la ${lineaSeleccionada}?\n\n- Dale OK si sigues ahí.\n- Dale Cancelar si te moviste y actualiza el menú arriba.`);
+                
+                if (!confirmacion) {
+                    alert("Por favor, selecciona tu ubicación correcta en el panel antes de seguir escaneando.");
+                }
+                tiempoUltimaValidacion = Date.now(); // Reinicia el contador
+            }
         }
 
-        // --- 3. ENVÍO DE DATOS A GOOGLE SHEETS ---
-        function enviarDatos(hash, ubicacion) {
-            // Se usa mode: 'no-cors' para que Google reciba el POST en silencio sin bloquear por seguridad de dominio
-            fetch("https://script.google.com/macros/s/AKfycbywGDoNx1ES3hoJsvm6k_xpt_5QDgv3kxkCoLG1tdB4t7_E58IeOF9ow6iDhYntWb29GQ/exec", {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+        actualizarContador();
+
+        async function generarHash(texto) {
+            const data = new TextEncoder().encode(texto);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+        }
+
+        async function onScanSuccess(decodedText) {
+            // 1. Revisar si pasaron 15 minutos antes de aceptar el código
+            auditarUbicacion();
+
+            const ahora = Date.now();
+            const hashAnonimo = await generarHash(decodedText);
+            const logDiv = document.getElementById('log');
+
+            if (bloqueosTemporales[hashAnonimo] && (ahora - bloqueosTemporales[hashAnonimo] < 30 * 60 * 1000)) return;
+            bloqueosTemporales[hashAnonimo] = ahora;
+
+            // 2. Recolección de datos
+            const ubicacionActiva = document.querySelector('input[name="ubicacion"]:checked').value;
+            // Si es salida, toma el motivo del menú. Si es entrada, pone "N/A"
+            const motivoAsignado = (ubicacionActiva === 'Salida') ? document.getElementById('motivo').value : "N/A";
+
+            const nuevoRegistro = {
+                hash: hashAnonimo,
+                filtro: document.getElementById('filtro').value,
+                linea: document.getElementById('linea').value,
+                ubicacion: ubicacionActiva,
+                motivo: motivoAsignado,
+                timestamp: new Date().toISOString()
+            };
+
+            registrosOffline.push(nuevoRegistro);
+            localStorage.setItem('pip_lote_datos', JSON.stringify(registrosOffline));
+            actualizarContador();
+
+            // 3. Feedback Visual
+            document.getElementById('reader').classList.add('success-flash');
+            setTimeout(() => document.getElementById('reader').classList.remove('success-flash'), 250);
+            
+            const icono = ubicacionActiva === 'Entrada' ? '📥' : '📤';
+            logDiv.innerHTML = `<div class="log-entry">${icono} [${new Date().toLocaleTimeString()}] ${ubicacionActiva} - ${motivoAsignado}</div>` + logDiv.innerHTML;
+        }
+
+        function actualizarContador() {
+            document.getElementById('contador').innerText = `Registros: ${registrosOffline.length}`;
+        }
+
+        function enviarLote() {
+            if (registrosOffline.length === 0) return alert("No hay datos para enviar.");
+            const btn = document.querySelector('.btn-enviar');
+            btn.innerText = "Enviando..."; btn.disabled = true;
+
+            fetch(GOOGLE_WEBHOOK_URL, {
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    hash_pasajero: hash,
-                    punto_control: ubicacion
+                    filtro: document.getElementById('filtro').value,
+                    linea: document.getElementById('linea').value,
+                    ubicacion: document.querySelector('input[name="ubicacion"]:checked').value,
+                    registros: registrosOffline
                 })
             }).then(() => {
-                console.log("Datos enviados en segundo plano");
-            }).catch(err => console.error("Error al enviar:", err));
+                alert("✅ Datos enviados. Buen turno.");
+                registrosOffline = []; localStorage.removeItem('pip_lote_datos');
+                actualizarContador(); btn.innerText = "📤 Cierre"; btn.disabled = false;
+                document.getElementById('log').innerHTML = '<strong>Historial local:</strong><br>';
+            }).catch(() => {
+                alert("❌ Sin internet. Reintenta en otra zona.");
+                btn.innerText = "📤 Cierre"; btn.disabled = false;
+            });
         }
 
-        // --- 4. LÓGICA DEL ESCÁNER ---
-        async function onScanSuccess(decodedText, decodedResult) {
-            const currentTime = new Date().getTime();
-            
-            // Evitar escaneos múltiples del mismo código en menos de 3 segundos
-            if (currentTime - lastScanTime < scanCooldown) return;
-            lastScanTime = currentTime;
-
-            // 4.1 Obtener la ubicación seleccionada
-            const ubicacionActiva = document.querySelector('input[name="ubicacion"]:checked').value;
-
-            // 4.2 Cifrar el pase de abordar
-            const hashAnonimo = await generarHash(decodedText);
-
-            // 4.3 Enviar a la base de datos
-            enviarDatos(hashAnonimo, ubicacionActiva);
-
-            // 4.4 Feedback visual y registro en pantalla
-            document.getElementById('reader').classList.add('success-flash');
-            setTimeout(() => document.getElementById('reader').classList.remove('success-flash'), 300);
-
-            const logDiv = document.getElementById('log');
-            const hora = new Date().toLocaleTimeString();
-            logDiv.innerHTML += `<div class="log-entry">✅ [${hora}] ${ubicacionActiva} - Hash: ${hashAnonimo}</div>`;
-            logDiv.scrollTop = logDiv.scrollHeight; // Auto-scroll
-        }
-
-        // --- 5. INICIALIZAR CÁMARA ---
-        // Configuramos para leer preferentemente formatos 2D como PDF417 o QR
-        const html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", 
-            { 
-                fps: 10, 
-                qrbox: { width: 300, height: 150 },
-                aspectRatio: 1.0,
-                formatsToSupport: [ Html5QrcodeSupportedFormats.PDF_417, Html5QrcodeSupportedFormats.QR_CODE ]
-            }, 
-            false
-        );
-        html5QrcodeScanner.render(onScanSuccess);
-
+        const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 300, height: 150 }, aspectRatio: 1.0, formatsToSupport: [ Html5QrcodeSupportedFormats.PDF_417, Html5QrcodeSupportedFormats.QR_CODE ] }, false);
+        scanner.render(onScanSuccess);
     </script>
 </body>
 </html>
