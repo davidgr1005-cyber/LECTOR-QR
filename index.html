@@ -9,19 +9,17 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #eef2f3; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         h2 { color: #2c3e50; margin: 0 0 10px 0; font-size: 1.5em; text-align: center; }
         .panel { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); width: 100%; max-width: 400px; margin-bottom: 10px; box-sizing: border-box;}
-        .row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .row { display: flex; gap: 8px; margin-bottom: 10px; }
         .col { flex: 1; display: flex; flex-direction: column; }
-        label { font-size: 0.8em; color: #7f8c8d; margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
-        select { padding: 10px; border-radius: 6px; border: 1px solid #bdc3c7; font-size: 1em; background-color: #f8f9fa;}
+        label { font-size: 0.75em; color: #7f8c8d; margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #bdc3c7; font-size: 0.95em; background-color: #f8f9fa;}
         
-        /* Botones Entrada/Salida */
         .controls { display: flex; gap: 10px; width: 100%; }
         .radio-btn { flex: 1; padding: 12px; text-align: center; background-color: #e0e0e0; color: #555; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         input[type="radio"] { display: none; }
         input[type="radio"]:checked + .radio-btn.entrada { background-color: #2980b9; color: white; }
         input[type="radio"]:checked + .radio-btn.salida { background-color: #c0392b; color: white; }
         
-        /* Contenedor dinámico de Motivos */
         #contenedor-motivo { display: none; margin-top: 10px; animation: fadeIn 0.3s; }
         #contenedor-motivo.visible { display: flex; flex-direction: column; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -43,12 +41,16 @@
     <div class="panel">
         <div class="row">
             <div class="col">
+                <label>Terminal</label>
+                <select id="terminal"></select>
+            </div>
+            <div class="col">
                 <label>Filtro</label>
-                <select id="filtro"><option value="Alfa 1">Alfa 1</option><option value="Alfa 2">Alfa 2</option></select>
+                <select id="filtro"></select>
             </div>
             <div class="col">
                 <label>Línea</label>
-                <select id="linea"><script>for(let i=1; i<=13; i++) document.write(`<option value="Línea ${i}">Línea ${i}</option>`);</script></select>
+                <select id="linea"></select>
             </div>
         </div>
 
@@ -61,11 +63,32 @@
             <label>🚨 Motivo de la demora (Solo Salida)</label>
             <select id="motivo">
                 <option value="Sin Novedad">✅ Sin novedad (Flujo rápido)</option>
-                <option value="Revisión Física">✋ Revisión física de equipaje</option>
-                <option value="Electrónicos">💻 Electrónicos olvidados / Laptops</option>
-                <option value="Punzocortantes">🔪 Punzocortantes detectados</option>
-                <option value="Líquidos">💧 Líquidos / Aerosoles excedidos</option>
-                <option value="Revisión Corporal">🧍 Revisión corporal (Arco pitó)</option>
+                <option value="Usuarios con necesidades especiales">♿ Usuarios con necesidades especiales</option>
+                <option value="Usuarios bajo custodia judicial o control administrativo">👮 Usuarios bajo custodia judicial o control administrativo</option>
+                <option value="Usuarios o funcionarios de alto rango">👔 Usuarios o funcionarios de alto rango</option>
+                <option value="Inspección a personal con portación de arma autorizada">🔫 Inspección a personal con portación de arma autorizada</option>
+                <option value="Inspección a usuarios a solicitud de SEMAR">⚓ Inspección a usuarios a solicitud de SEMAR</option>
+                <option value="Animales de servicio, lazarillos y mascotas">🐕 Animales de servicio, lazarillos y mascotas</option>
+                <option value="Revisión en privado">🚪 Revisión en privado</option>
+                <option value="Revisión aleatoria/Medidas reforzadas">🎲 Revisión aleatoria/Medidas reforzadas</option>
+                <option value="Corte en el suministro eléctrico">⚡ Corte en el suministro eléctrico</option>
+                <option value="Atención de vuelos demorados">⏳ Atención de vuelos demorados</option>
+                <option value="Revisión con el equipo detector portátil de explosivos">🧨 Revisión con el equipo detector portátil de explosivos</option>
+                <option value="Revisión con el equipo detector de explosivos por medio de trazas">🔬 Revisión con el equipo detector de explosivos por medio de trazas</option>
+                <option value="Inspección de artículos prohibidos que ingresan a la zona de seguridad restringida para su venta">🚫 Inspección de artículos prohibidos para venta</option>
+                <option value="Procedimiento de búsqueda de objetos que el pasajero afirma que extravió dentro del PIP">🔎 Búsqueda de objetos extraviados en PIP</option>
+                <option value="Valijas diplomáticas">💼 Valijas diplomáticas</option>
+                <option value="Material clasificado como confidencial">📁 Material clasificado como confidencial</option>
+                <option value="Medicamentos">💊 Medicamentos</option>
+                <option value="Artículos religiosos y amuletos">📿 Artículos religiosos y amuletos</option>
+                <option value="Turbantes">👳 Turbantes</option>
+                <option value="Material fílmico">🎞️ Material fílmico</option>
+                <option value="Material científico">🧪 Material científico</option>
+                <option value="Cenizas humanas">⚱️ Cenizas humanas</option>
+                <option value="Objetos de culto considerados reliquias">🏛️ Objetos de culto considerados reliquias</option>
+                <option value="Órganos humanos">❤️ Órganos humanos</option>
+                <option value="Tanques de oxígeno">🧯 Tanques de oxígeno</option>
+                <option value="Líquidos, Aerosoles y Geles">💧 Líquidos, Aerosoles y Geles</option>
             </select>
         </div>
     </div>
@@ -82,8 +105,63 @@
     <script>
         const GOOGLE_WEBHOOK_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
         
+        // --- CONFIGURACIÓN DE TERMINALES, FILTROS Y LÍNEAS ---
+        const configAICM = {
+            "Terminal 1": {
+                "Alfa 2": 13,
+                "Bravo": 5,
+                "Delta": 4,
+                "Golfo": 8,
+                "Julieta": 5
+            },
+            "Terminal 2": {
+                "Kilo": 7,
+                "Kilo Bravo": 5,
+                "Metro": 10,
+                "Metro Bravo": 6
+            }
+        };
+
+        const selTerminal = document.getElementById('terminal');
+        const selFiltro = document.getElementById('filtro');
+        const selLinea = document.getElementById('linea');
+
+        // Lógica de menús en cascada
+        function inicializarMenus() {
+            selTerminal.innerHTML = '';
+            for (let term in configAICM) {
+                selTerminal.innerHTML += `<option value="${term}">${term}</option>`;
+            }
+            actualizarFiltros();
+        }
+
+        function actualizarFiltros() {
+            const term = selTerminal.value;
+            selFiltro.innerHTML = '';
+            for (let filtro in configAICM[term]) {
+                selFiltro.innerHTML += `<option value="${filtro}">${filtro}</option>`;
+            }
+            actualizarLineas();
+        }
+
+        function actualizarLineas() {
+            const term = selTerminal.value;
+            const filtro = selFiltro.value;
+            const numLineas = configAICM[term][filtro];
+            
+            selLinea.innerHTML = '';
+            for (let i = 1; i <= numLineas; i++) {
+                selLinea.innerHTML += `<option value="Línea ${i}">Línea ${i}</option>`;
+            }
+        }
+
+        selTerminal.addEventListener('change', actualizarFiltros);
+        selFiltro.addEventListener('change', actualizarLineas);
+        inicializarMenus(); // Ejecutar al cargar la página
+
+        // --- MANEJO DE MEMORIA OFFLINE ---
         let registrosOffline = JSON.parse(localStorage.getItem('pip_lote_datos')) || [];
-        let bloqueosTemporales = {}; // Se borran si se cierra la pestaña
+        let bloqueosTemporales = {}; 
         
         // --- LÓGICA DE INTERFAZ (MOSTRAR MOTIVOS) ---
         const radios = document.querySelectorAll('input[name="ubicacion"]');
@@ -101,18 +179,18 @@
 
         // --- SEGURO ANTI-OLVIDOS (15 Minutos) ---
         let tiempoUltimaValidacion = Date.now();
-        const LIMITE_ALERTA = 15 * 60 * 1000; // 15 minutos en milisegundos
+        const LIMITE_ALERTA = 15 * 60 * 1000; 
 
         function auditarUbicacion() {
             if (Date.now() - tiempoUltimaValidacion > LIMITE_ALERTA) {
-                const lineaSeleccionada = document.getElementById('linea').value;
-                // Esto detiene temporalmente la ejecución y lanza una alerta nativa gigante
-                const confirmacion = confirm(`⚠️ CONTROL DE CALIDAD AVSEC ⚠️\n\nHan pasado 15 minutos.\n¿Confirmas que sigues escaneando en la ${lineaSeleccionada}?\n\n- Dale OK si sigues ahí.\n- Dale Cancelar si te moviste y actualiza el menú arriba.`);
+                const lineaSel = document.getElementById('linea').value;
+                const filtroSel = document.getElementById('filtro').value;
+                const confirmacion = confirm(`⚠️ CONTROL DE CALIDAD AVSEC ⚠️\n\nHan pasado 15 minutos.\n¿Confirmas que sigues escaneando en el filtro ${filtroSel}, ${lineaSel}?\n\n- Dale OK si sigues ahí.\n- Dale Cancelar si te moviste y actualiza el menú arriba.`);
                 
                 if (!confirmacion) {
                     alert("Por favor, selecciona tu ubicación correcta en el panel antes de seguir escaneando.");
                 }
-                tiempoUltimaValidacion = Date.now(); // Reinicia el contador
+                tiempoUltimaValidacion = Date.now(); 
             }
         }
 
@@ -125,7 +203,6 @@
         }
 
         async function onScanSuccess(decodedText) {
-            // 1. Revisar si pasaron 15 minutos antes de aceptar el código
             auditarUbicacion();
 
             const ahora = Date.now();
@@ -135,13 +212,12 @@
             if (bloqueosTemporales[hashAnonimo] && (ahora - bloqueosTemporales[hashAnonimo] < 30 * 60 * 1000)) return;
             bloqueosTemporales[hashAnonimo] = ahora;
 
-            // 2. Recolección de datos
             const ubicacionActiva = document.querySelector('input[name="ubicacion"]:checked').value;
-            // Si es salida, toma el motivo del menú. Si es entrada, pone "N/A"
             const motivoAsignado = (ubicacionActiva === 'Salida') ? document.getElementById('motivo').value : "N/A";
 
             const nuevoRegistro = {
                 hash: hashAnonimo,
+                terminal: document.getElementById('terminal').value,
                 filtro: document.getElementById('filtro').value,
                 linea: document.getElementById('linea').value,
                 ubicacion: ubicacionActiva,
@@ -153,7 +229,6 @@
             localStorage.setItem('pip_lote_datos', JSON.stringify(registrosOffline));
             actualizarContador();
 
-            // 3. Feedback Visual
             document.getElementById('reader').classList.add('success-flash');
             setTimeout(() => document.getElementById('reader').classList.remove('success-flash'), 250);
             
@@ -173,6 +248,7 @@
             fetch(GOOGLE_WEBHOOK_URL, {
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    terminal: document.getElementById('terminal').value,
                     filtro: document.getElementById('filtro').value,
                     linea: document.getElementById('linea').value,
                     ubicacion: document.querySelector('input[name="ubicacion"]:checked').value,
